@@ -359,7 +359,7 @@ class Zui {
 		g.opacity = 1.0;
 		accent > 0 ? drawString(g, text, titleOffsetX, 0) : drawStringSmall(g, text, titleOffsetX, 0);
 
-		endElement();
+		endElement(true, ELEMENT_H());
 
 		return state.expanded;
 	}
@@ -369,8 +369,8 @@ class Zui {
 		var ratio = w / image.width;
 		var h = image.height * ratio;
 		g.drawScaledImage(image, _x + buttonOffsetY, _y, w, h);
-		_y += h;
-		endElement(false);
+		//_y += h;
+		endElement(true, h);
 	}
 
 	public function text(text: String, align = ALIGN_LEFT, bg = 0x00000000) {
@@ -381,7 +381,7 @@ class Zui {
 		g.color = DEFAULT_TEXT_COL;
 		drawStringSmall(g, text, DEFAULT_TEXT_OFFSET_X(), 0, align);
 
-		endElement();
+		endElement(true, ELEMENT_H());
 	}
 
 	public function textInput(id: String, text: String, label = ""): String {
@@ -464,7 +464,7 @@ class Zui {
 		g.color = DEFAULT_TEXT_COL; // Text
 		textSelectedId != id ? drawStringSmall(g, text) : drawStringSmall(g, textSelectedCurrentText);
 
-		endElement();
+		endElement(true, ELEMENT_H());
 
 		return text;
 	}
@@ -495,7 +495,7 @@ class Zui {
 		g.color = BUTTON_TEXT_COL;
 		drawStringSmall(g, text, 0, 0, ALIGN_CENTER);
 
-		endElement();
+		endElement(true, ELEMENT_H());
 
 		return wasPressed;
 	}
@@ -514,7 +514,7 @@ class Zui {
 		g.color = hover ? DEFAULT_TEXT_COL_HOVER : DEFAULT_TEXT_COL; // Text
 		drawStringSmall(g, text, titleOffsetX, 0);
 
-		endElement();
+		endElement(true, ELEMENT_H());
 
 		return state.selected;
 	}
@@ -535,7 +535,7 @@ class Zui {
 		g.color = hover ? DEFAULT_TEXT_COL_HOVER : DEFAULT_TEXT_COL; // Text
 		drawStringSmall(g, text, titleOffsetX, 0);
 
-		endElement();
+		endElement(true, ELEMENT_H());
 
 		return state.selected == pos;
 	}
@@ -573,7 +573,7 @@ class Zui {
 		g.color = DEFAULT_TEXT_COL; // Value
 		drawStringSmall(g, state.value + "");
 
-		endElement();
+		endElement(true, ELEMENT_H());
 		return state.value;
 	}
 	
@@ -677,10 +677,10 @@ class Zui {
 		g.drawString(text, _x + xOffset, _y + fontSmallOffsetY + yOffset);
 	}
 
-	function endElement(nextLine = true) {
+	function endElement(nextLine, elementHeight) {
 		if (curWindowState.layout == LAYOUT_VERTICAL) {
 			if (curRatio == -1 || (ratios != null && curRatio == ratios.length - 1)) { // New line
-				if (nextLine) _y += ELEMENT_H() + ELEMENT_SEPARATOR_SIZE();
+				if (nextLine) _y += elementHeight + ELEMENT_SEPARATOR_SIZE();
 
 				if ((ratios != null && curRatio == ratios.length - 1)) { // Last row element
 					curRatio = -1;
