@@ -4,7 +4,7 @@ package zui;
 // https://github.com/luboslenco/zui
 
 class Zui {
-	static inline var t = zui.theme.Default; // Basic theming
+	public static var t : Dynamic = zui.theme.Default; // Basic theming
 	// static inline var t = zui.theme.Light;
 	static var SCALE: Float;
 	
@@ -415,7 +415,7 @@ class Zui {
 		}
 
 		g.color = t.TEXT_COL; // Text
-		textSelectedId != id ? drawStringSmall(g, text) : drawStringSmall(g, textSelectedCurrentText);
+		textSelectedId != id ? drawStringSmall(g, text, t._DEFAULT_TEXT_OFFSET_X) : drawStringSmall(g, textSelectedCurrentText, t._DEFAULT_TEXT_OFFSET_X);
 
 		endElement();
 
@@ -540,7 +540,7 @@ class Zui {
 
 		if (displayValue) {
 			g.color = t.TEXT_COL; // Value
-			drawStringSmall(g, state.value + "");
+			drawStringSmall(g, state.value + "", t._DEFAULT_TEXT_OFFSET_X);
 		}
 
 		endElement();
@@ -563,6 +563,10 @@ class Zui {
 		g.color = t.SEPARATOR_COL;
 		g.fillRect(_x, _y, _w - DEFAULT_TEXT_OFFSET_X(), LINE_STRENGTH());
 		_y += 2;
+	}
+
+	public function blank() {
+		endElement();
 	}
 
 	function drawArrow(expanded: Bool, hover: Bool) {
@@ -642,7 +646,7 @@ class Zui {
 	}
 
 	function drawString(g: kha.graphics2.Graphics, text: String,
-						xOffset: Float = t._DEFAULT_TEXT_OFFSET_X, yOffset: Float = 0,
+						xOffset: Float, yOffset: Float = 0,
 						align:Align = Left) {
 		xOffset *= SCALE;
 		g.font = font;
@@ -654,7 +658,7 @@ class Zui {
 	}
 
 	function drawStringSmall(g: kha.graphics2.Graphics, text: String,
-							 xOffset: Float = t._DEFAULT_TEXT_OFFSET_X, yOffset: Float = 0,
+							 xOffset: Float, yOffset: Float = 0,
 							 align:Align = Left) {
 		xOffset *= SCALE;
 		g.font = font;
