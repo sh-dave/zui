@@ -22,6 +22,17 @@ class Zui {
 	static var firstInstance = true;
 	static var prerenderedElements = false;
 
+	public var enableNavigation = false;
+	public var forceRedraw = false;
+
+	// navigation
+	var _selectNavi = false;
+	var _naviIndex : Int = -1;
+	var _lastNaviIndex : Int = -1;
+	var _elementIndex : Int = -1;
+	var _maxElementIndex : Int = -1;
+	// /navigation
+
 	var inputX: Float; // Input position
 	var inputY: Float;
 	
@@ -180,6 +191,7 @@ class Zui {
 
 	// Returns true if redraw is needed
 	public function window(id:String, x:Int, y:Int, w:Int, h:Int, layout:Layout = Vertical):Bool {
+		_elementIndex = -1;
 		w = Std.int(w * scaleFactor);
 		h = Std.int(h * scaleFactor);
 		var state = windowStates.get(id);
@@ -211,7 +223,9 @@ class Zui {
 		_w = !state.scrollEnabled ? w : w - SCROLL_W(); // Exclude scrollbar if present
 		_h = h;
 
-		if (state.redraws == 0 && !isScrolling && !isTyping) return false;
+		if (!forceRedraw)
+			if (state.redraws == 0 && !isScrolling && !isTyping)
+				return false;
 
 		g.begin(true, 0x00000000);
 		g.color = t.WINDOW_BG_COL;
@@ -227,7 +241,7 @@ class Zui {
 
 	function endWindow() {
 		var state = curWindowState;
-		if (state.redraws > 0 || isScrolling || isTyping) {
+		if (state.redraws > 0 || isScrolling || isTyping || forceRedraw) {
 			var fullHeight = _y - state.scrollOffset;
 			if (fullHeight < _windowH || state.layout == Horizontal) { // Disable scrollbar
 				state.scrollEnabled = false;
@@ -299,6 +313,7 @@ class Zui {
 	}
 
 	public function node(id: String, text: String, accent = 0, expanded = false): Bool {
+		beginElement(true);
 		var state = nodeStates.get(id);
 		if (state == null) { state = new NodeState(expanded); nodeStates.set(id, state); }
 
@@ -325,6 +340,7 @@ class Zui {
 	}
 	
 	public function image(image: kha.Image) {
+		beginElement();
 		var w = _w - buttonOffsetY * 2;
 		var ratio = w / image.width;
 		var h = image.height * ratio;
@@ -335,6 +351,7 @@ class Zui {
 	}
 
 	public function text(text: String, align:Align = Left, bg = 0x00000000) {
+		beginElement();
 		if (bg != 0x0000000) {
 			g.color = bg;
 			g.fillRect(_x + buttonOffsetY, _y + buttonOffsetY, _w - buttonOffsetY * 2, BUTTON_H());
@@ -346,6 +363,8 @@ class Zui {
 	}
 
 	public function textInput(id: String, text: String, label = ""): String {
+		beginElement(true);
+
 		if (submitTextId == id) { // Submit edited text
 			//text = textSelectedCurrentText;
 			text = textToSubmit;
@@ -443,6 +462,8 @@ class Zui {
 	}
 
 	public function button(text: String): Bool {
+		beginElement(true);
+
 		var wasPressed = getReleased();
 		var pushed = getPushed();
 		var hover = getHover();
@@ -462,6 +483,7 @@ class Zui {
 	}
 
 	public function check(id: String, text: String, initState = false): Bool {
+		beginElement(true);
 		var state = checkStates.get(id);
 		if (state == null) { state = new CheckState(initState); checkStates.set(id, state); }
 
@@ -481,6 +503,7 @@ class Zui {
 	}
 
 	public function radio(groupId: String, pos: Int, text: String, initState = 0): Bool {
+		beginElement(true);
 		var state = radioStates.get(groupId);
 		if (state == null) {
 			state = new RadioState(initState); radioStates.set(groupId, state);
@@ -502,6 +525,7 @@ class Zui {
 	}
 
 	public function inlineRadio(id: String, texts: Array<String>, initState = 0): Int {
+		beginElement(true);
 		var state = radioStates.get(id);
 		if (state == null) state = new RadioState(initState); radioStates.set(id, state);
 
@@ -522,6 +546,7 @@ class Zui {
 	}
 
 	public function slider(id: String, text: String, from: Float, to: Float, filled: Bool = false, precision = 100, initValue: Float = 0, displayValue = true): Float {
+		beginElement(true);
 		var state = sliderStates.get(id);
 		if (state == null) { state = new SliderState(initValue); sliderStates.set(id, state); }
 
@@ -568,6 +593,7 @@ class Zui {
 	// }
 	
 	public function separator() {
+		beginElement(true);
 		g.color = t.SEPARATOR_COL;
 		g.fillRect(_x, _y, _w - DEFAULT_TEXT_OFFSET_X(), LINE_STRENGTH());
 		_y += 2;
@@ -673,6 +699,17 @@ class Zui {
 		g.drawString(text, _x + xOffset, _y + fontSmallOffsetY + yOffset);
 	}
 
+	function beginElement(interactive: Bool = false) {
+		if (interactive) {
+			_elementIndex += 1;
+		}
+
+		if (_selectNavi && _naviIndex == -1) {
+		 	_naviIndex = _elementIndex;
+			_selectNavi = false;
+		}		
+	}
+
 	function endElement(nextLine = true) {
 		if (curWindowState.layout == Vertical) {
 			if (curRatio == -1 || (ratios != null && curRatio == ratios.length - 1)) { // New line
@@ -730,15 +767,21 @@ class Zui {
 	}
 
 	function getInitialHover(): Bool {
-		return
+		return (
 			inputInitialX >= _windowX + _x && inputInitialX < (_windowX + _x + _w) &&
-        	inputInitialY >= _windowY + _y && inputInitialY < (_windowY + _y + ELEMENT_H());
+        	inputInitialY >= _windowY + _y && inputInitialY < (_windowY + _y + ELEMENT_H())
+		) || isCurrentNavi();
 	}
 
 	function getHover(): Bool {
-		return
+		return (
 			inputX >= _windowX + _x && inputX < (_windowX + _x + _w) &&
-        	inputY >= _windowY + _y && inputY < (_windowY + _y + ELEMENT_H());
+        	inputY >= _windowY + _y && inputY < (_windowY + _y + ELEMENT_H())
+		) || isCurrentNavi();
+	}
+
+	inline function isCurrentNavi(): Bool {
+		return enableNavigation && _elementIndex == _naviIndex;
 	}
 
 	function getInputInRect(x: Float, y: Float, w: Float, h: Float): Bool {
@@ -794,13 +837,69 @@ class Zui {
 	}
 
 	function onKeyDown(key: kha.Key, char: String) {
-        isKeyDown = true;
-        this.key = key;
-        this.char = char;
+		if (enableNavigation) {
+			switch (key) {
+				case kha.Key.DOWN, kha.Key.RIGHT: {
+					_lastNaviIndex = _naviIndex;
+					_naviIndex += 1; // TODO (DK) skip noninteractive indices, wrap around
+					trace('naviIndex: ${_naviIndex}');
+				}
+				case kha.Key.UP, kha.Key.LEFT: {
+					_lastNaviIndex = _naviIndex;
+					_naviIndex -= 1; // TODO (DK) skip noninteractive indices, wrap around
+					trace('naviIndex: ${_naviIndex}');
+				}
+				case kha.Key.CHAR: {
+					// TODO (DK) forward to default: for textinput
+					if (char == ' ') {
+						inputStarted = true;
+						inputDown = true;
+					}
+				}
+				default: {
+					isKeyDown = true;
+					this.key = key;
+					this.char = char;
+				}
+			}			
+		} else {
+			switch (key) {
+				default: {
+					isKeyDown = true;
+					this.key = key;
+					this.char = char;
+				}
+			}
+		}
     }
 
     function onKeyUp(key: kha.Key, char: String) {
+		if (enableNavigation) {
+			switch (key) {
+				case kha.Key.CHAR: {
+					if (char == ' ') {
+						inputDown = false;
+						inputReleased = true;
+					}
+				}
+				default:
+			}
+		}
     }
+	
+	public function selectNextAsDefaultForNavigation() {
+		if (enableNavigation) {
+			_selectNavi = true;
+		}
+	}
+
+	public function clearNavigation() {
+		if (enableNavigation) {
+			_selectNavi = false;
+			_naviIndex = -1;
+			_lastNaviIndex = -1;
+		}
+	}
 	
 	static inline function ELEMENT_W() { return t._ELEMENT_W * SCALE; }
 	static inline function ELEMENT_H() { return t._ELEMENT_H * SCALE; }
