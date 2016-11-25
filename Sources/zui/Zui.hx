@@ -302,11 +302,11 @@ class Zui {
 		var state = nodeStates.get(id);
 		if (state == null) { state = new NodeState(expanded); nodeStates.set(id, state); }
 
-		if (getReleased()) {
+		if (getReleased(ELEMENT_H())) {
 			state.expanded = !state.expanded;
 		}
 
-		var hover = getHover();
+		var hover = getHover(ELEMENT_H());
 
 		if (accent > 0) { // Bg
 			g.color = accent == 1 ? t.NODE_BG1_COL : t.NODE_BG2_COL;
@@ -319,7 +319,7 @@ class Zui {
 		g.opacity = 1.0;
 		accent > 0 ? drawString(g, text, titleOffsetX, 0) : drawStringSmall(g, text, titleOffsetX, 0);
 
-		endElement();
+		endElement(ELEMENT_H());
 
 		return state.expanded;
 	}
@@ -331,7 +331,7 @@ class Zui {
 		g.color = t.WINDOW_TINT_COL;
 		g.drawScaledImage(image, _x + buttonOffsetY, _y, w, h);
 		_y += h;
-		endElement(false);
+		endElement(ELEMENT_H(), false);
 	}
 
 	public function text(text: String, align:Align = Left, bg = 0x00000000) {
@@ -342,7 +342,7 @@ class Zui {
 		g.color = t.TEXT_COL;
 		drawStringSmall(g, text, DEFAULT_TEXT_OFFSET_X(), 0, align);
 
-		endElement();
+		endElement(ELEMENT_H());
 	}
 
 	public function textInput(id: String, text: String, label = ""): String {
@@ -354,11 +354,11 @@ class Zui {
 			textSelectedCurrentText = "";
 		}
 
-		var hover = getHover();
+		var hover = getHover(ELEMENT_H());
 		g.color = hover ? t.TEXT_INPUT_BG_COL_HOVER : t.TEXT_INPUT_BG_COL; // Text bg
 		drawRect(g, t.FILL_TEXT_INPUT_BG, _x + buttonOffsetY, _y + buttonOffsetY, _w - buttonOffsetY * 2, BUTTON_H(), 2);
 
-		if (textSelectedId != id && getReleased()) { // Passive
+		if (textSelectedId != id && getReleased(ELEMENT_H())) { // Passive
 			isTyping = true;
 			submitTextId = textSelectedId;
 			textToSubmit = textSelectedCurrentText;
@@ -425,7 +425,7 @@ class Zui {
 		g.color = t.TEXT_COL; // Text
 		textSelectedId != id ? drawStringSmall(g, text) : drawStringSmall(g, textSelectedCurrentText);
 
-		endElement();
+		endElement(ELEMENT_H());
 
 		return text;
 	}
@@ -443,9 +443,9 @@ class Zui {
 	}
 
 	public function button(text: String): Bool {
-		var wasPressed = getReleased();
-		var pushed = getPushed();
-		var hover = getHover();
+		var wasPressed = getReleased(ELEMENT_H());
+		var pushed = getPushed(ELEMENT_H());
+		var hover = getHover(ELEMENT_H());
 
 		g.color = pushed ? t.BUTTON_BG_COL_PRESSED :
 				  hover ? t.BUTTON_BG_COL_HOVER :
@@ -456,7 +456,7 @@ class Zui {
 		g.color = t.BUTTON_TEXT_COL;
 		drawStringSmall(g, text, 0, 0, Center);
 
-		endElement();
+		endElement(ELEMENT_H());
 
 		return wasPressed;
 	}
@@ -465,17 +465,17 @@ class Zui {
 		var state = checkStates.get(id);
 		if (state == null) { state = new CheckState(initState); checkStates.set(id, state); }
 
-		if (getReleased()) {
+		if (getReleased(ELEMENT_H())) {
 			state.selected = !state.selected;
 		}
 
-		var hover = getHover();
+		var hover = getHover(ELEMENT_H());
 		drawCheck(state.selected, hover); // Check
 
 		g.color = hover ? t.TEXT_COL_HOVER : t.TEXT_COL; // Text
 		drawStringSmall(g, text, titleOffsetX, 0, Left);
 
-		endElement();
+		endElement(ELEMENT_H());
 
 		return state.selected;
 	}
@@ -486,17 +486,17 @@ class Zui {
 			state = new RadioState(initState); radioStates.set(groupId, state);
 		}
 
-		if (getReleased()) {
+		if (getReleased(ELEMENT_H())) {
 			state.selected = pos;
 		}
 
-		var hover = getHover();
+		var hover = getHover(ELEMENT_H());
 		drawRadio(state.selected == pos, hover); // Radio
 
 		g.color = hover ? t.TEXT_COL_HOVER : t.TEXT_COL; // Text
 		drawStringSmall(g, text, titleOffsetX, 0);
 
-		endElement();
+		endElement(ELEMENT_H());
 
 		return state.selected == pos;
 	}
@@ -505,14 +505,14 @@ class Zui {
 		var state = radioStates.get(id);
 		if (state == null) state = new RadioState(initState); radioStates.set(id, state);
 
-		if (getReleased()) {
+		if (getReleased(ELEMENT_H())) {
 			if (++state.selected >= texts.length) state.selected = 0;
 		}
 
-		var hover = getHover();
+		var hover = getHover(ELEMENT_H());
 		drawInlineRadio(texts[state.selected], hover); // Radio
 
-		endElement();
+		endElement(ELEMENT_H());
 		return state.selected;
 	}
 
@@ -525,7 +525,7 @@ class Zui {
 		var state = sliderStates.get(id);
 		if (state == null) { state = new SliderState(initValue); sliderStates.set(id, state); }
 
-		if (getStarted()) {
+		if (getStarted(ELEMENT_H())) {
 			state.scrolling = true;
 			isScrolling = true;
 		}
@@ -540,7 +540,7 @@ class Zui {
 			else if (state.value > to) state.value = to;
 		}
 		
-		var hover = getHover();
+		var hover = getHover(ELEMENT_H());
 		drawSlider(state.value, from, to, filled, hover); // Slider
 
 		g.color = t.DEFAULT_LABEL_COL;// Text
@@ -551,7 +551,7 @@ class Zui {
 			drawStringSmall(g, state.value + "");
 		}
 
-		endElement();
+		endElement(ELEMENT_H());
 		return state.value;
 	}
 	
@@ -673,10 +673,10 @@ class Zui {
 		g.drawString(text, _x + xOffset, _y + fontSmallOffsetY + yOffset);
 	}
 
-	function endElement(nextLine = true) {
+	function endElement(h, nextLine = true) {
 		if (curWindowState.layout == Vertical) {
 			if (curRatio == -1 || (ratios != null && curRatio == ratios.length - 1)) { // New line
-				if (nextLine) _y += ELEMENT_H() + ELEMENT_SEPARATOR_SIZE();
+				if (nextLine) _y += h + ELEMENT_SEPARATOR_SIZE();
 
 				if ((ratios != null && curRatio == ratios.length - 1)) { // Last row element
 					curRatio = -1;
@@ -717,28 +717,28 @@ class Zui {
 		fill ? g.fillRect(x, y, w, h) : g.drawRect(x, y, w, h, LINE_STRENGTH());
 	}
 
-	function getReleased(): Bool { // Input selection
-		return inputReleased && getHover() && getInitialHover();
+	function getReleased(h): Bool { // Input selection
+		return inputReleased && getHover(h) && getInitialHover(h);
 	}
 
-	function getPushed(): Bool {
-		return inputDown && getHover() && getInitialHover();
+	function getPushed(h): Bool {
+		return inputDown && getHover(h) && getInitialHover(h);
 	}
 	
-	function getStarted(): Bool {
-		return inputStarted && getHover();
+	function getStarted(h): Bool {
+		return inputStarted && getHover(h);
 	}
 
-	function getInitialHover(): Bool {
+	function getInitialHover(h): Bool {
 		return
 			inputInitialX >= _windowX + _x && inputInitialX < (_windowX + _x + _w) &&
-        	inputInitialY >= _windowY + _y && inputInitialY < (_windowY + _y + ELEMENT_H());
+        	inputInitialY >= _windowY + _y && inputInitialY < (_windowY + _y + h);
 	}
 
-	function getHover(): Bool {
+	function getHover(h): Bool {
 		return
 			inputX >= _windowX + _x && inputX < (_windowX + _x + _w) &&
-        	inputY >= _windowY + _y && inputY < (_windowY + _y + ELEMENT_H());
+        	inputY >= _windowY + _y && inputY < (_windowY + _y + h);
 	}
 
 	function getInputInRect(x: Float, y: Float, w: Float, h: Float): Bool {
