@@ -38,7 +38,9 @@ class Zui {
 	var inputReleased: Bool;
 	var inputDown: Bool;
 	var inputDownR: Bool;
+	var inputDownM: Bool;
 	var isKeyDown = false; // Keys
+	var isKeyPressed = false;
 	var key: Null<kha.input.KeyCode> = null;
 	var char: String;
 
@@ -151,7 +153,7 @@ class Zui {
 		radioSelectOffsetX = radioSelectOffsetY;
 		elementsBaked = false;
 	}
-	
+
 	function bakeElements() {
 		if (checkSelectImage != null) {
 			checkSelectImage.unload();
@@ -295,7 +297,7 @@ class Zui {
 				handle.dragX += Std.int(inputDX);
 				handle.dragY += Std.int(inputDY);
 			}
-			_y += 15; // Header offset 
+			_y += 15; // Header offset
 			windowHeader += 15;
 		}
 
@@ -330,7 +332,7 @@ class Zui {
 				var ratio = amountScrolled / amountToScroll;
 				var barH = _windowH * Math.abs(_windowH / fullHeight);
 				barH = Math.max(barH, ELEMENT_H());
-				
+
 				var totalScrollableArea = _windowH - barH;
 				var e = amountToScroll / totalScrollableArea;
 				var barY = totalScrollableArea * ratio;
@@ -341,14 +343,14 @@ class Zui {
 					scrollingHandle = handle;
 					isScrolling = true;
 				}
-				
+
 				if (handle.scrolling) { // Scroll
 					scroll(inputDY * e, fullHeight);
 				}
 				else if (inputWheelDelta != 0) { // Wheel
 					scroll(inputWheelDelta * ELEMENT_H(), fullHeight);
 				}
-				
+
 				//Stay in bounds
 				if (handle.scrollOffset > 0) {
 					handle.scrollOffset = 0;
@@ -356,7 +358,7 @@ class Zui {
 				else if (fullHeight + handle.scrollOffset < _windowH) {
 					handle.scrollOffset = _windowH - fullHeight;
 				}
-				
+
 				g.color = t.WINDOW_BG_COL; // Bg
 				g.fillRect(_windowW - SCROLL_W(), _windowY, SCROLL_W(), _windowH);
 				g.color = t.ACCENT_COL; // Bar
@@ -379,9 +381,9 @@ class Zui {
 		globalG.color = t.WINDOW_TINT_COL;
 		// if (scaleTexture != 1.0) globalG.imageScaleQuality = kha.graphics2.ImageScaleQuality.High;
 		globalG.drawScaledImage(handle.texture, _windowX, _windowY, handle.texture.width / ops.scaleTexture, handle.texture.height / ops.scaleTexture);
-		
+
 		if (tooltipText != "") {
-			if (!tooltipShown) { 
+			if (!tooltipShown) {
 				tooltipShown = true;
 				tooltipX = inputX;
 				tooltipTime = kha.Scheduler.time();
@@ -389,7 +391,7 @@ class Zui {
 			if (kha.Scheduler.time() - tooltipTime > t.TOOLTIP_DELAY) drawTooltip();
 		}
 		else tooltipShown = false;
-		
+
 		if (bindGlobalG) globalG.end();
 	}
 
@@ -406,7 +408,7 @@ class Zui {
 			windowHeader += buttonOffsetY + BUTTON_H();
 			restoreX = inputX; // Mouse in tab header, disable clicks for tab content
 			restoreY = inputY;
-			if (getInputInRect(_windowX, _windowY, _windowW, windowHeader)) { 
+			if (getInputInRect(_windowX, _windowY, _windowW, windowHeader)) {
 				inputX = inputY = -1;
 			}
 		}
@@ -428,7 +430,7 @@ class Zui {
 		g.fillRect(0, _y, _windowW, buttonOffsetY + BUTTON_H());
 		g.color = t.ACCENT_COL;
 		g.fillRect(buttonOffsetY, _y + buttonOffsetY + BUTTON_H(), _windowW - buttonOffsetY * 2, LINE_STRENGTH());
-		
+
 		for (i in 0...tabNames.length) {
 			_x = tabX;
 			_w = Std.int(ops.font.width(fontSize, tabNames[i]) + buttonOffsetY * 2 + 14 * SCALE);
@@ -484,7 +486,7 @@ class Zui {
 
 		return handle.selected;
 	}
-	
+
 	public function image(image: kha.Image, tint = 0xffffffff, h: Null<Float> = null): State {
 		var iw = image.width * SCALE;
 		var ih = image.height * SCALE;
@@ -494,7 +496,7 @@ class Zui {
 			w = Math.min(iw, _w - buttonOffsetY * 2);
 			x += buttonOffsetY;
 			var scroll = currentWindow != null ? currentWindow.scrollEnabled : false;
-			if (!scroll) { 
+			if (!scroll) {
 				var r = curRatio == -1 ? 1.0 : ratios[curRatio];
 				w -= SCROLL_W() * r;
 				x += SCROLL_W() * r / 2;
@@ -519,7 +521,7 @@ class Zui {
 		g.color = tint;
 		var h_float:Float = h; // TODO: hashlink fix
 		imageInvertY ? g.drawScaledImage(image, x, _y + h_float, w, -h_float) : g.drawScaledImage(image, x, _y, w, h_float);
-		
+
 		endElement(h);
 		return started ? State.Started : released ? State.Released : down ? State.Down : State.Idle;
 	}
@@ -634,7 +636,7 @@ class Zui {
 			var cursorX = align == Left ? _x + strw + off : _x + _w - strw - off;
 			g.fillRect(cursorX, _y + cursorY * lineHeight + buttonOffsetY * 1.5, 1 * SCALE, cursorHeight);
 		}
-		
+
 		if (asFloat) text = formatFloatString(text);
 		textSelectedCurrentText = text;
 	}
@@ -817,7 +819,7 @@ class Zui {
 			drawString(g, label, null, 0, align == Left ? Right : Left);
 			if (align == Left) _x += 15;
 		}
-		
+
 		if (align == Right) _x -= 15;
 		drawString(g, texts[handle.position], null, 0, align);
 		if (align == Right) _x += 15;
@@ -833,7 +835,7 @@ class Zui {
 			scrollingHandle = handle;
 			isScrolling = true;
 		}
-		
+
 		handle.changed = false;
 		if (handle.scrolling) { // Scroll
 			var range = to - from;
@@ -864,13 +866,13 @@ class Zui {
 			submitTextEdit();
 			handle.value = Std.parseFloat(handle.text);
 		}
-		
+
 		g.color = t.LABEL_COL;// Text
 		drawString(g, text, null, 0, align);
 
 		if (displayValue) {
 			g.color = t.TEXT_COL; // Value
-			textSelectedHandle != handle ? 
+			textSelectedHandle != handle ?
 				drawString(g, handle.value + "", null, 0, lalign) :
 				drawString(g, textSelectedCurrentText, null, 0, lalign);
 		}
@@ -958,7 +960,7 @@ class Zui {
 		g.color = t.TEXT_COL; // Text
 		drawString(g, text, titleOffsetX, 0, Align.Center);
 	}
-	
+
 	function drawSlider(value: Float, from: Float, to: Float, filled: Bool, hover: Bool) {
 		var x = _x + buttonOffsetY;
 		var y = _y + buttonOffsetY;
@@ -966,12 +968,12 @@ class Zui {
 
 		g.color = hover ? t.ACCENT_HOVER_COL : t.ACCENT_COL;
 		drawRect(g, t.FILL_ACCENT_BG, x, y, w, BUTTON_H()); // Bg
-		
+
 		g.color = hover ? t.ACCENT_HOVER_COL : t.ACCENT_COL;
 		var offset = (value - from) / (to - from);
 		var barW = 8 * SCALE; // Unfilled bar
 		var sliderX = filled ? x : x + (w - barW) * offset;
-		var sliderW = filled ? w * offset : barW; 
+		var sliderW = filled ? w * offset : barW;
 		sliderW = Math.min(sliderW, w);
 		g.fillRect(sliderX, y, sliderW, BUTTON_H());
 	}
@@ -1028,7 +1030,7 @@ class Zui {
 						align:Align = Left) {
 		var maxChars = Std.int(_w / Std.int(fontSize / 2)); // Guess width for now
 		if (text.length > maxChars) text = text.substring(0, maxChars) + "..";
-		
+
 		if (xOffset == null) xOffset = t.TEXT_OFFSET;
 		xOffset *= SCALE;
 		g.font = ops.font;
@@ -1071,7 +1073,7 @@ class Zui {
 		wBeforeSplit = _w;
 		_w = Std.int(_w * ratios[curRatio]);
 	}
-	
+
 	public function indent() {
 		_x += TAB_W();
 		_w -= TAB_W();
@@ -1080,7 +1082,7 @@ class Zui {
 		_x -= TAB_W();
 		_w += TAB_W();
 	}
-	
+
 	public function fill(x: Float, y: Float, w: Float, h: Float, color: kha.Color) {
 		g.color = color;
 		g.fillRect(_x + x * SCALE, _y + y * SCALE, w * SCALE, h * SCALE);
@@ -1107,7 +1109,7 @@ class Zui {
 		isPushed = inputEnabled && inputDown && getHover(elemH) && getInitialHover(elemH);
 		return isPushed;
 	}
-	
+
 	function getStarted(elemH = -1.0): Bool {
 		isStarted = inputEnabled && inputStarted && getHover(elemH);
 		return isStarted;
@@ -1136,7 +1138,11 @@ class Zui {
 
 	public function onMouseDown(button: Int, x: Int, y: Int) { // Input events
 		inputStarted = true;
-		button == 0 ? inputDown = true : inputDownR = true;
+		switch button {
+			case 0: inputDown = true;
+			case 1: inputDownR = true;
+			case 2: inputDownM = true;
+		}
 		var sx = Std.int(x * ops.scaleTexture);
 		var sy = Std.int(y * ops.scaleTexture);
 		setInputPosition(sx, sy);
@@ -1153,7 +1159,11 @@ class Zui {
 		else { // To prevent action when scrolling is active
 			inputReleased = true;
 		}
-		button == 0 ? inputDown = false : inputDownR = false;
+		switch button {
+			case 0: inputDown = false;
+			case 1: inputDownR = false;
+			case 2: inputDownM = false;
+		}
 		setInputPosition(Std.int(x * ops.scaleTexture), Std.int(y * ops.scaleTexture));
 		deselectText();
 	}
@@ -1175,17 +1185,20 @@ class Zui {
 
 	public function onKeyDown(code: kha.input.KeyCode) {
 		isKeyDown = true;
+		isKeyPressed = true;
 		this.key = code;
 		if (code == kha.input.KeyCode.Space) this.char = " ";
 	}
 
-	public function onKeyUp(code: kha.input.KeyCode) {}
+	public function onKeyUp(code: kha.input.KeyCode) {
+		isKeyPressed = false;
+	}
 
 	public function onKeyPress(char: String) {
 		isKeyDown = true;
 		this.char = char;
 	}
-	
+
 	inline function ELEMENT_W() { return t.ELEMENT_W * SCALE; }
 	inline function ELEMENT_H() { return t.ELEMENT_H * SCALE; }
 	inline function ELEMENT_OFFSET() { return t.ELEMENT_OFFSET * SCALE; }
