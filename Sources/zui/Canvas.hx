@@ -12,7 +12,7 @@ class Canvas {
 	static var h = new zui.Zui.Handle(); // TODO: needs one handle per canvas
 
 	public static function draw(ui: Zui, canvas: TCanvas, g: kha.graphics2.Graphics): Array<String> {
-		
+
 		if (screenW == -1) {
 			screenW = kha.System.windowWidth();
 			screenH = kha.System.windowHeight();
@@ -74,7 +74,7 @@ class Canvas {
 			var font = ui.ops.font;
 			var size = ui.fontSize;
 			var tcol = ui.t.TEXT_COL;
-			
+
 			var fontAsset = element.asset != null && StringTools.endsWith(element.asset, '.ttf');
 			if (fontAsset) ui.ops.font = getAsset(canvas, element.asset);
 			ui.fontSize = scaled(element.height);
@@ -84,7 +84,7 @@ class Canvas {
 			ui.ops.font = font;
 			ui.fontSize = size;
 			ui.t.TEXT_COL = tcol;
-		
+
 		case Button:
 			var bh = ui.t.BUTTON_H;
 			ui.t.BUTTON_H = scaled(element.height);
@@ -93,7 +93,7 @@ class Canvas {
 				if (e != null && e != "") events.push(e);
 			}
 			ui.t.BUTTON_H = bh;
-		
+
 		case Image:
 			var image = getAsset(canvas, element.asset);
 			var fontAsset = element.asset != null && StringTools.endsWith(element.asset, '.ttf');
@@ -192,6 +192,7 @@ typedef TElement = {
 	@:optional var children: Array<Int>; // ids
 	@:optional var asset: String;
 	@:optional var visible: Null<Bool>;
+	@:optional var navigation: Null<Navigation>;
 }
 
 typedef TAsset = {
@@ -225,4 +226,11 @@ typedef TAsset = {
 	var BottomLeft = 6;
 	var Bottom = 7;
 	var BottomRight = 8;
+}
+
+typedef Navigation = {
+	@:optional var up: Int;
+	@:optional var down: Int;
+	@:optional var left: Int;
+	@:optional var right: Int;
 }
