@@ -193,6 +193,12 @@ typedef TElement = {
 	@:optional var asset: String;
 	@:optional var visible: Null<Bool>;
 	@:optional var navigation: Null<Navigation>;
+	@:optional var state: Null<ElementState>;
+}
+
+enum ElementState {
+	CheckState( checked: Bool );
+	RadioState( groupId: String, position: Int ); // TODO (DK) replace groupId with Handle
 }
 
 typedef TAsset = {
